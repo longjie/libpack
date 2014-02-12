@@ -91,7 +91,7 @@ TEST(pack, save_short_array) {
 
     /* エンディアン変換なし */
     clear_buff();
-     /* short単独変数のsave */
+    /* short単独変数のsave */
     tail = pack_save (buff, (char*)"h10 h10h10", a0, a1, a2);
     /* tailポインタのテスト */
     EXPECT_EQ(&buff[30*sizeof(short)], tail);
@@ -120,6 +120,16 @@ TEST(pack, save_short_array) {
 	EXPECT_EQ(a0[i], b0[i]);
 	EXPECT_EQ(a1[i], b1[i]);
 	EXPECT_EQ(a2[i], b2[i]);
+    }
+    /* shortのload(エンディアン変換なし) */
+    tail = pack_load (buff, (char*)"h h9 h10 h10", &b0[0], &b0[1], b1, b2);
+    /* tailポインタのテスト */
+    EXPECT_EQ(&buff[30*sizeof(short)], tail);
+    /* 値のテスト */
+    for (int i=0; i<10; i++) {
+	EXPECT_NE(a0[i], b0[i]);
+	EXPECT_NE(a1[i], b1[i]);
+	EXPECT_NE(a2[i], b2[i]);
     }
 }
 
@@ -268,9 +278,9 @@ TEST(pack, test_double) {
 /* 型を混ぜた変数のsave/load */
 TEST(pack, mixed_1) {
     char ac[10] = {1,2,3,4,5,6,7,8,9,10}, bc[10] = {};
-    short ah[10] = {-1,-2,-3,-4,-5,-6,-7,-8,-9,-10}, bh[10] = {};
-    long al[10] = {-1,-2,-3,-4,-5,-6,-7,-8,-9,-10}, bl[10] = {};
-    int ai[10] = {-1,-2,-3,-4,-5,-6,-7,-8,-9,-10}, bi[10] = {};
+    short ah[10] = {1,2,3,4,5,6,7,8,9,10}, bh[10] = {};
+    long al[10] = {1,2,3,4,5,6,7,8,9,10}, bl[10] = {};
+    int ai[10] = {1,2,3,4,5,6,7,8,9,10}, bi[10] = {};
     float af[10] = {1,2,3,4,5,6,7,8,9,10}, bf[10] = {};
     double ad[10] = {1,2,3,4,5,6,7,8,9,10}, bd[10] = {};
 
@@ -297,6 +307,9 @@ TEST(pack, mixed_1) {
     tail = pack_save (buff, (char*)"!c c9 h h9 l l9 i i9 f f9 d d9", ac[0], &ac[1], ah[0], &ah[1], al[0], &al[1], ai[0], &ai[1], af[0], &af[1], ad[0], &ad[1]);
     /* tailポインタのテスト */
     EXPECT_EQ(&buff[10*(sizeof(char)+sizeof(short)+sizeof(long)+sizeof(int)+sizeof(float)+sizeof(double))], tail);
+    for (int i=0; i<10; i++) {
+	bc[i] = bh[i] = bi[i] = bl[i] = bf[i] = bd[i] = 0;
+    }
     /* load(エンディアン変換あり) */
     tail = pack_load (buff, (char*)"!c c9 h h9 l l9 i i9 f f9 d d9", &bc[0], &bc[1], &bh[0], &bh[1], &bl[0], &bl[1], &bi[0], &bi[1], &bf[0], &bf[1], &bd[0], &bd[1]);
     /* tailポインタのテスト */
